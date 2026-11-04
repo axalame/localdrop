@@ -18,10 +18,40 @@ use futures_util::{SinkExt, StreamExt};
 use serde_json::json;
 use std::path::PathBuf;
 use tokio::sync::oneshot;
+use rust_embed::RustEmbed;
 use tower::ServiceExt;
 use tower_http::cors::CorsLayer;
 use tower_http::services::{ServeDir, ServeFile};
 use uuid::Uuid;
+
+#[derive(RustEmbed)]
+#[folder = "../dist"]
+struct EmbeddedAssets;
+
+async fn embedded_assets_handler(uri: axum::http::Uri) -> Response {
+    let raw_path = uri.path().trim_start_matches('/');
+    let path = if raw_path.is_empty() { "index.html" } else { raw_path };
+
+    if let Some(content) = EmbeddedAssets::get(path) {
+        let mime = mime_guess::from_path(path).first_or_octet_stream();
+        return (
+            [(header::CONTENT_TYPE, mime.as_ref())],
+            content.data,
+        )
+            .into_response();
+    }
+
+    // SPA fallback: return index.html for client-side routing
+    if let Some(index) = EmbeddedAssets::get("index.html") {
+        return (
+            [(header::CONTENT_TYPE, "text/html; charset=utf-8")],
+            index.data,
+        )
+            .into_response();
+    }
+
+    (StatusCode::NOT_FOUND, "Not Found").into_response()
+}
 
 fn find_dist_dir() -> Option<PathBuf> {
     let candidates = [
@@ -76,7 +106,7 @@ pub fn build_router(state: AppState) -> Router {
         let serve_dir = ServeDir::new(&dist).fallback(ServeFile::new(dist.join("index.html")));
         api_router.fallback_service(serve_dir)
     } else {
-        api_router.fallback(fallback_html)
+        api_router.fallback(embedded_assets_handler)
     }
 }
 
@@ -479,20 +509,6 @@ async fn get_shortcut_guide(State(state): State<AppState>) -> Html<String> {
     Html(html)
 }
 
-async fn fallback_html() -> Html<&'static str> {
-    Html(r#"<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocalDrop</title>
-</head>
-<body style="background:#020617;color:#f8fafc;font-family:sans-serif;padding:24px;text-align:center;">
-    <h2>LocalDrop Web Server Active</h2>
-    <p>Соберите фронтенд командой: <code>npm run build</code></p>
-</body>
-</html>"#)
-}
 
 fn parse_device_name(user_agent: &str, client_type: &str) -> String {
     if client_type == "desktop" {
