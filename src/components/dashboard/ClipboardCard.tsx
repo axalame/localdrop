@@ -27,7 +27,7 @@ export const ClipboardCard: React.FC<ClipboardCardProps> = ({
   const activeClipUrl = extractFirstUrl(activeClipboard);
 
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-3.5 shrink-0">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Laptop className="w-4 h-4 text-zinc-400" />
@@ -95,7 +95,7 @@ export const ClipboardCard: React.FC<ClipboardCardProps> = ({
         <div className="flex gap-2">
           <input
             type="text"
-            placeholder="Отправить текст на телефон..."
+            placeholder="Отправить текст на устройства..."
             value={manualText}
             onChange={(e) => onManualTextChange(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && onSendManualText()}

@@ -20,11 +20,11 @@ export function App() {
 
   // On PC: allow switching to iPhone view for preview/testing and back
   return (
-    <div className="min-h-screen">
+    <div className="h-full w-full overflow-hidden">
       {viewMode === 'desktop' ? (
         <DesktopDashboard onSwitchToMobile={() => setViewMode('mobile')} />
       ) : (
-        <div className="min-h-screen bg-zinc-950 flex flex-col items-center">
+        <div className="h-full w-full bg-zinc-950 flex flex-col items-center overflow-y-auto">
           {/* Top Bar on PC in Mobile Preview Mode */}
           <div className="w-full bg-zinc-900 border-b border-zinc-800 px-6 py-3 flex items-center justify-between z-30 sticky top-0 shadow-sm">
             <div className="flex items-center gap-2.5 text-xs text-zinc-300">

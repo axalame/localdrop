@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   onSwitchToMobile,
 }) => {
   return (
-    <header className="border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-6 py-3.5 flex items-center justify-between sticky top-0 z-20">
+    <header className="border-b border-zinc-800 bg-zinc-900/90 backdrop-blur-md px-5 py-3 flex items-center justify-between shrink-0 w-full z-20">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shrink-0">
           <Clipboard className="w-5 h-5 text-white" />

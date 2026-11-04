@@ -29,7 +29,7 @@ export const DropZone: React.FC<DropZoneProps> = ({
         onFileUpload(e.dataTransfer.files);
       }}
       onClick={() => fileInputRef.current?.click()}
-      className={`border-2 border-dashed rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
+      className={`border-2 border-dashed rounded-2xl p-4 sm:p-5 shrink-0 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
         isDragging
           ? 'border-blue-500 bg-blue-950/20'
           : 'border-zinc-800 hover:border-zinc-700 bg-zinc-900/50 hover:bg-zinc-900'
