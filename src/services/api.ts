@@ -35,6 +35,17 @@ export async function clearHistoryApi(): Promise<boolean> {
   return res.ok;
 }
 
+export async function toggleFavoriteApi(id: string): Promise<boolean> {
+  const res = await fetch('/api/history/favorite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) return false;
+  const data = await res.json();
+  return data.is_favorite ?? false;
+}
+
 export async function copyToClipboardApi(text: string): Promise<boolean> {
   if (isTauri) {
     return tauriInvoke<boolean>('copy_to_clipboard', { text });
