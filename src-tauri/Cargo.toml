@@ -1,6 +1,6 @@
 [package]
 name = "localdrop"
-version = "0.1.0"
+version = "0.1.1"
 description = "LocalDrop - Local Clipboard & File Sharing between iPhone and Windows"
 authors = ["LocalDrop Team"]
 edition = "2024"
