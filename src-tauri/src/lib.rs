@@ -1,4 +1,5 @@
 pub mod clipboard;
+pub mod crypto;
 pub mod history;
 pub mod server;
 pub mod types;
