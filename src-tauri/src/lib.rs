@@ -250,15 +250,15 @@ async fn paste_from_clipboard(state: State<'_, AppState>) -> Result<Option<Histo
         if let Ok(text) = clip.get_text() {
             if !text.trim().is_empty() {
                 let now = chrono::Utc::now().timestamp_millis();
-                let item = HistoryItem {
-                    id: uuid::Uuid::new_v4().to_string(),
-                    item_type: "clipboard".to_string(),
-                    content: text.clone(),
-                    size: None,
-                    direction: "win_to_ios".to_string(),
-                    timestamp: now,
-                    file_path: None,
-                };
+                let item = HistoryItem::new(
+                    uuid::Uuid::new_v4().to_string(),
+                    "clipboard".to_string(),
+                    text.clone(),
+                    None,
+                    "win_to_ios".to_string(),
+                    now,
+                    None,
+                );
                 {
                     let mut cur = state.active_clipboard.write().await;
                     *cur = text.clone();
@@ -335,15 +335,15 @@ async fn add_dropped_files(
             .unwrap_or(&file_name)
             .to_string();
 
-        let item = HistoryItem {
-            id: uuid::Uuid::new_v4().to_string(),
-            item_type: "file".to_string(),
-            content: saved_file_name.clone(),
-            size: Some(size),
-            direction: "win_to_ios".to_string(),
-            timestamp: now,
-            file_path: Some(target_path.to_string_lossy().to_string()),
-        };
+        let item = HistoryItem::new(
+            uuid::Uuid::new_v4().to_string(),
+            "file".to_string(),
+            saved_file_name.clone(),
+            Some(size),
+            "win_to_ios".to_string(),
+            now,
+            Some(target_path.to_string_lossy().to_string()),
+        );
 
         state.add_history_item(item.clone()).await;
 

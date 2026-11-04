@@ -53,15 +53,15 @@ pub async fn save_clipboard_image_entry(state: &AppState) -> Result<Option<Histo
 
             let size = std::fs::metadata(&file_path).map(|m| m.len()).unwrap_or(0);
             let now = Utc::now().timestamp_millis();
-            let item = HistoryItem {
-                id: Uuid::new_v4().to_string(),
-                item_type: "file".to_string(),
-                content: filename.clone(),
-                size: Some(size),
-                direction: "win_to_ios".to_string(),
-                timestamp: now,
-                file_path: Some(file_path.to_string_lossy().to_string()),
-            };
+            let item = HistoryItem::new(
+                Uuid::new_v4().to_string(),
+                "file".to_string(),
+                filename.clone(),
+                Some(size),
+                "win_to_ios".to_string(),
+                now,
+                Some(file_path.to_string_lossy().to_string()),
+            );
 
             state.add_history_item(item.clone()).await;
             {
@@ -168,15 +168,15 @@ pub fn start_clipboard_monitor(state: AppState, handle: Handle) {
                                 *last = text_clone.clone();
                             }
                             let now = Utc::now().timestamp_millis();
-                            let item = HistoryItem {
-                                id: Uuid::new_v4().to_string(),
-                                item_type: "clipboard".to_string(),
-                                content: text_clone.clone(),
-                                size: None,
-                                direction: "win_to_ios".to_string(),
-                                timestamp: now,
-                                file_path: None,
-                            };
+                            let item = HistoryItem::new(
+                                Uuid::new_v4().to_string(),
+                                "clipboard".to_string(),
+                                text_clone.clone(),
+                                None,
+                                "win_to_ios".to_string(),
+                                now,
+                                None,
+                            );
                             state_clone.add_history_item(item).await;
                             let _ = state_clone.ws_broadcast.send(WsEvent::ClipboardUpdate {
                                 content: text_clone,
@@ -212,15 +212,15 @@ pub fn start_clipboard_monitor(state: AppState, handle: Handle) {
                                     .map(|m| m.len())
                                     .unwrap_or(0);
                                 let now = Utc::now().timestamp_millis();
-                                let item = HistoryItem {
-                                    id: Uuid::new_v4().to_string(),
-                                    item_type: "file".to_string(),
-                                    content: filename.clone(),
-                                    size: Some(size),
-                                    direction: "win_to_ios".to_string(),
-                                    timestamp: now,
-                                    file_path: Some(file_path.to_string_lossy().to_string()),
-                                };
+                                let item = HistoryItem::new(
+                                    Uuid::new_v4().to_string(),
+                                    "file".to_string(),
+                                    filename.clone(),
+                                    Some(size),
+                                    "win_to_ios".to_string(),
+                                    now,
+                                    Some(file_path.to_string_lossy().to_string()),
+                                );
 
                                 let state_clone = state.clone();
                                 handle.block_on(async move {

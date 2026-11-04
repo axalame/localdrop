@@ -231,15 +231,15 @@ async fn receive_clipboard(
     }
 
     let now = Utc::now().timestamp_millis();
-    let item = HistoryItem {
-        id: Uuid::new_v4().to_string(),
-        item_type: "clipboard".to_string(),
-        content: text.clone(),
-        size: None,
-        direction: "ios_to_win".to_string(),
-        timestamp: now,
-        file_path: None,
-    };
+    let item = HistoryItem::new(
+        Uuid::new_v4().to_string(),
+        "clipboard".to_string(),
+        text.clone(),
+        None,
+        "ios_to_win".to_string(),
+        now,
+        None,
+    );
 
     state.add_history_item(item).await;
 
@@ -391,15 +391,15 @@ async fn upload_files(
 
         let now = Utc::now().timestamp_millis();
         let item_id = Uuid::new_v4().to_string();
-        let item = HistoryItem {
-            id: item_id.clone(),
-            item_type: "file".to_string(),
-            content: saved_file_name.clone(),
-            size: Some(total_bytes),
-            direction: direction.to_string(),
-            timestamp: now,
-            file_path: Some(target_path.to_string_lossy().to_string()),
-        };
+        let item = HistoryItem::new(
+            item_id.clone(),
+            "file".to_string(),
+            saved_file_name.clone(),
+            Some(total_bytes),
+            direction.to_string(),
+            now,
+            Some(target_path.to_string_lossy().to_string()),
+        );
 
         state.add_history_item(item).await;
 
@@ -646,15 +646,15 @@ async fn handle_ws_socket(
                         }
                         let _ = set_system_clipboard(&payload.text);
                         let now = Utc::now().timestamp_millis();
-                        let item = HistoryItem {
-                            id: Uuid::new_v4().to_string(),
-                            item_type: "clipboard".to_string(),
-                            content: payload.text.clone(),
-                            size: None,
-                            direction: "ios_to_win".to_string(),
-                            timestamp: now,
-                            file_path: None,
-                        };
+                        let item = HistoryItem::new(
+                            Uuid::new_v4().to_string(),
+                            "clipboard".to_string(),
+                            payload.text.clone(),
+                            None,
+                            "ios_to_win".to_string(),
+                            now,
+                            None,
+                        );
                         state_clone.add_history_item(item).await;
                         let _ = state_clone.ws_broadcast.send(WsEvent::ClipboardUpdate {
                             content: payload.text,
@@ -706,15 +706,15 @@ async fn handle_paste(State(state): State<AppState>) -> Json<serde_json::Value> 
         if let Ok(text) = clip.get_text() {
             if !text.trim().is_empty() {
                 let now = Utc::now().timestamp_millis();
-                let item = HistoryItem {
-                    id: Uuid::new_v4().to_string(),
-                    item_type: "clipboard".to_string(),
-                    content: text.clone(),
-                    size: None,
-                    direction: "win_to_ios".to_string(),
-                    timestamp: now,
-                    file_path: None,
-                };
+                let item = HistoryItem::new(
+                    Uuid::new_v4().to_string(),
+                    "clipboard".to_string(),
+                    text.clone(),
+                    None,
+                    "win_to_ios".to_string(),
+                    now,
+                    None,
+                );
                 {
                     let mut cur = state.active_clipboard.write().await;
                     *cur = text.clone();
@@ -763,25 +763,24 @@ mod tests {
             active_clipboard: Arc::new(RwLock::new(String::new())),
             last_local_clip: Arc::new(RwLock::new(String::new())),
             history: Arc::new(RwLock::new(vec![
-                HistoryItem {
-                    id: "safe-1".into(),
-                    item_type: "file".into(),
-                    content: "test_safe.txt".into(),
-                    size: Some(12),
-                    direction: "win_to_ios".into(),
-                    timestamp: 1000,
-                    file_path: Some(safe_file.to_string_lossy().to_string()),
-                },
-                HistoryItem {
-                    id: "unsafe-1".into(),
-                    item_type: "file".into(),
-                    content: "win.ini".into(),
-                    size: Some(100),
-                    direction: "win_to_ios".into(),
-                    timestamp: 1001,
-                    // Path pointing outside download_dir
-                    file_path: Some("C:\\Windows\\win.ini".into()),
-                },
+                HistoryItem::new(
+                    "safe-1".into(),
+                    "file".into(),
+                    "test_safe.txt".into(),
+                    Some(12),
+                    "win_to_ios".into(),
+                    1000,
+                    Some(safe_file.to_string_lossy().to_string()),
+                ),
+                HistoryItem::new(
+                    "unsafe-1".into(),
+                    "file".into(),
+                    "win.ini".into(),
+                    Some(100),
+                    "win_to_ios".into(),
+                    1001,
+                    Some("C:\\Windows\\win.ini".into()),
+                ),
             ])),
             ws_broadcast: ws_tx,
             download_dir: temp_dir,

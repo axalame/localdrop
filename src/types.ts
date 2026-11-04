@@ -1,3 +1,6 @@
+export type ContentType = 'text' | 'rich_text' | 'image' | 'file';
+export type TagType = 'link' | 'code' | 'image';
+
 export interface HistoryItem {
   id: string;
   item_type: 'clipboard' | 'file';
@@ -6,6 +9,10 @@ export interface HistoryItem {
   direction: 'win_to_ios' | 'ios_to_win';
   timestamp: number;
   file_path?: string;
+  is_favorite?: boolean;
+  device_name?: string;
+  content_type?: ContentType;
+  tags?: TagType[];
 }
 
 export interface ConnectedClient {

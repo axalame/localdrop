@@ -52,15 +52,15 @@ mod tests {
     fn test_history_cap_logic() {
         let mut items: Vec<HistoryItem> = Vec::new();
         for i in 0..150 {
-            let item = HistoryItem {
-                id: format!("id-{}", i),
-                item_type: "clipboard".to_string(),
-                content: format!("text-{}", i),
-                size: None,
-                direction: "win_to_ios".to_string(),
-                timestamp: 1000 + i as i64,
-                file_path: None,
-            };
+            let item = HistoryItem::new(
+                format!("id-{}", i),
+                "clipboard".to_string(),
+                format!("text-{}", i),
+                None,
+                "win_to_ios".to_string(),
+                1000 + i as i64,
+                None,
+            );
             items.push(item);
             if items.len() > MAX_HISTORY_ITEMS {
                 let excess = items.len() - MAX_HISTORY_ITEMS;
@@ -74,15 +74,15 @@ mod tests {
 
     #[test]
     fn test_history_serialization() {
-        let items = vec![HistoryItem {
-            id: "123".to_string(),
-            item_type: "clipboard".to_string(),
-            content: "hello world".to_string(),
-            size: None,
-            direction: "ios_to_win".to_string(),
-            timestamp: 1700000000,
-            file_path: None,
-        }];
+        let items = vec![HistoryItem::new(
+            "123".to_string(),
+            "clipboard".to_string(),
+            "hello world".to_string(),
+            None,
+            "ios_to_win".to_string(),
+            1700000000,
+            None,
+        )];
 
         let json = serde_json::to_string(&items).unwrap();
         let deserialized: Vec<HistoryItem> = serde_json::from_str(&json).unwrap();

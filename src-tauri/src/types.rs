@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::{broadcast, oneshot, RwLock};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct HistoryItem {
     pub id: String,
     pub item_type: String, // "clipboard" | "file"
@@ -13,6 +13,40 @@ pub struct HistoryItem {
     pub direction: String, // "win_to_ios" | "ios_to_win"
     pub timestamp: i64,    // Unix timestamp in ms
     pub file_path: Option<String>,
+    #[serde(default)]
+    pub is_favorite: Option<bool>,
+    #[serde(default)]
+    pub device_name: Option<String>,
+    #[serde(default)]
+    pub content_type: Option<String>,
+    #[serde(default)]
+    pub tags: Option<Vec<String>>,
+}
+
+impl HistoryItem {
+    pub fn new(
+        id: String,
+        item_type: String,
+        content: String,
+        size: Option<u64>,
+        direction: String,
+        timestamp: i64,
+        file_path: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            item_type,
+            content,
+            size,
+            direction,
+            timestamp,
+            file_path,
+            is_favorite: Some(false),
+            device_name: None,
+            content_type: None,
+            tags: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,6 +122,28 @@ impl AppState {
         tokio::task::spawn_blocking(|| {
             crate::history::save_history(&[]);
         });
+    }
+
+    pub async fn toggle_favorite(&self, id: &str) -> Option<bool> {
+        let (new_fav, items_to_save) = {
+            let mut hist = self.history.write().await;
+            if let Some(item) = hist.iter_mut().find(|it| it.id == id) {
+                let current = item.is_favorite.unwrap_or(false);
+                let toggled = !current;
+                item.is_favorite = Some(toggled);
+                (Some(toggled), hist.clone())
+            } else {
+                (None, Vec::new())
+            }
+        };
+
+        if let Some(fav) = new_fav {
+            tokio::task::spawn_blocking(move || {
+                crate::history::save_history(&items_to_save);
+            });
+            return Some(fav);
+        }
+        None
     }
 }
 
