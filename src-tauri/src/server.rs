@@ -1,7 +1,10 @@
 use crate::clipboard::set_system_clipboard;
+use crate::crypto::CryptoSession;
 use crate::types::{
     AppState, ClipboardPayload, ConnectedClient, HistoryItem, ServerStatus, WsEvent, WsQuery,
 };
+use base64::engine::general_purpose::STANDARD as B64;
+use base64::Engine;
 use axum::{
     extract::{
         multipart::Multipart,
@@ -15,9 +18,11 @@ use axum::{
 };
 use chrono::Utc;
 use futures_util::{SinkExt, StreamExt};
+use serde::Deserialize;
 use serde_json::json;
 use std::path::PathBuf;
-use tokio::sync::oneshot;
+use std::sync::Arc;
+use tokio::sync::{mpsc, oneshot, RwLock};
 use rust_embed::RustEmbed;
 use tower::ServiceExt;
 use tower_http::cors::CorsLayer;
@@ -88,6 +93,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/api/status", get(get_status))
         .route("/api/history", get(get_history))
         .route("/api/history/clear", post(clear_history))
+        .route("/api/history/favorite", post(toggle_favorite_endpoint))
         .route("/api/clipboard", post(receive_clipboard))
         .route("/api/download/{id}", get(download_file))
         .route("/api/view/{id}", get(view_file))
@@ -200,6 +206,24 @@ async fn clear_history(State(state): State<AppState>) -> Json<serde_json::Value>
     state.clear_history().await;
     let _ = state.ws_broadcast.send(WsEvent::HistoryUpdated { items: Vec::new() });
     Json(json!({ "success": true }))
+}
+
+#[derive(Debug, Deserialize)]
+pub struct FavoritePayload {
+    pub id: String,
+}
+
+async fn toggle_favorite_endpoint(
+    State(state): State<AppState>,
+    Json(payload): Json<FavoritePayload>,
+) -> impl IntoResponse {
+    if let Some(is_fav) = state.toggle_favorite(&payload.id).await {
+        let items = state.history.read().await.clone();
+        let _ = state.ws_broadcast.send(WsEvent::HistoryUpdated { items });
+        Json(json!({ "success": true, "is_favorite": is_fav })).into_response()
+    } else {
+        (StatusCode::NOT_FOUND, Json(json!({ "error": "Item not found" }))).into_response()
+    }
 }
 
 async fn receive_clipboard(
@@ -554,6 +578,48 @@ async fn ws_handler(
     })
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(tag = "type")]
+enum ClientWsMessage {
+    #[serde(rename = "handshake_init")]
+    HandshakeInit { client_pk: String },
+    #[serde(rename = "encrypted_envelope")]
+    EncryptedEnvelope { nonce: String, ciphertext: String },
+    #[serde(untagged)]
+    LegacyClipboard(ClipboardPayload),
+}
+
+async fn apply_clipboard_update(state: &AppState, text: &str) {
+    if text.trim().is_empty() {
+        return;
+    }
+    {
+        let mut last_local = state.last_local_clip.write().await;
+        *last_local = text.to_string();
+    }
+    {
+        let mut active = state.active_clipboard.write().await;
+        *active = text.to_string();
+    }
+    let _ = set_system_clipboard(text);
+    let now = Utc::now().timestamp_millis();
+    let item = HistoryItem::new(
+        Uuid::new_v4().to_string(),
+        "clipboard".to_string(),
+        text.to_string(),
+        None,
+        "ios_to_win".to_string(),
+        now,
+        None,
+    );
+    state.add_history_item(item).await;
+    let _ = state.ws_broadcast.send(WsEvent::ClipboardUpdate {
+        content: text.to_string(),
+        timestamp: now,
+        source: "ios".to_string(),
+    });
+}
+
 async fn handle_ws_socket(
     socket: WebSocket,
     state: AppState,
@@ -598,6 +664,10 @@ async fn handle_ws_socket(
         let _ = state.ws_broadcast.send(WsEvent::ClientsUpdated { clients: mobile_list });
     }
 
+    // Direct channel for sending handshake responses and encrypted snapshots
+    let (direct_tx, mut direct_rx) = mpsc::channel::<Message>(32);
+    let crypto_session: Arc<RwLock<Option<CryptoSession>>> = Arc::new(RwLock::new(None));
+
     // Send initial active clipboard to the client
     let active_clip = state.active_clipboard.read().await.clone();
     let init_event = WsEvent::ClipboardUpdate {
@@ -609,58 +679,109 @@ async fn handle_ws_socket(
         let _ = sender.send(Message::Text(msg.into())).await;
     }
 
+    let crypto_send = crypto_session.clone();
     let mut send_task = tokio::spawn(async move {
         loop {
-            match rx.recv().await {
-                Ok(event) => {
-                    if let Ok(json_str) = serde_json::to_string(&event) {
-                        if sender.send(Message::Text(json_str.into())).await.is_err() {
+            tokio::select! {
+                Some(direct_msg) = direct_rx.recv() => {
+                    if sender.send(direct_msg).await.is_err() {
+                        break;
+                    }
+                }
+                event_res = rx.recv() => {
+                    match event_res {
+                        Ok(event) => {
+                            let session_guard = crypto_send.read().await;
+                            let msg_to_send = if let Some(ref session) = *session_guard {
+                                if let Ok(bytes) = serde_json::to_vec(&event) {
+                                    if let Ok((nonce, ciphertext)) = session.encrypt(&bytes) {
+                                        let env = json!({
+                                            "type": "encrypted_envelope",
+                                            "nonce": nonce,
+                                            "ciphertext": ciphertext
+                                        });
+                                        Some(Message::Text(env.to_string().into()))
+                                    } else {
+                                        None
+                                    }
+                                } else {
+                                    None
+                                }
+                            } else {
+                                serde_json::to_string(&event).ok().map(|s| Message::Text(s.into()))
+                            };
+
+                            if let Some(msg) = msg_to_send {
+                                if sender.send(msg).await.is_err() {
+                                    break;
+                                }
+                            }
+                        }
+                        Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
+                            log::warn!("WebSocket client lagged behind, skipped {} messages", skipped);
+                            continue;
+                        }
+                        Err(tokio::sync::broadcast::error::RecvError::Closed) => {
                             break;
                         }
                     }
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Lagged(skipped)) => {
-                    log::warn!("WebSocket client lagged behind, skipped {} messages", skipped);
-                    continue;
-                }
-                Err(tokio::sync::broadcast::error::RecvError::Closed) => {
-                    break;
                 }
             }
         }
     });
 
     let state_clone = state.clone();
+    let crypto_recv = crypto_session.clone();
+    let direct_tx_clone = direct_tx.clone();
+
     let mut recv_task = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
             if let Message::Text(text) = msg {
-                if let Ok(payload) = serde_json::from_str::<ClipboardPayload>(&text) {
-                    if !payload.text.trim().is_empty() {
-                        {
-                            let mut last_local = state_clone.last_local_clip.write().await;
-                            *last_local = payload.text.clone();
+                if let Ok(client_msg) = serde_json::from_str::<ClientWsMessage>(&text) {
+                    match client_msg {
+                        ClientWsMessage::HandshakeInit { client_pk } => {
+                            let mut server_session = CryptoSession::new();
+                            let mut salt = [0u8; 16];
+                            rand::RngCore::fill_bytes(&mut rand::rngs::OsRng, &mut salt);
+
+                            if server_session.derive_shared_key(&client_pk, &salt).is_ok() {
+                                let ack = json!({
+                                    "type": "handshake_ack",
+                                    "server_pk": server_session.public_key_base64(),
+                                    "salt": B64.encode(salt)
+                                });
+                                let _ = direct_tx_clone.send(Message::Text(ack.to_string().into())).await;
+
+                                // Send initial encrypted history snapshot
+                                let history_items = state_clone.history.read().await.clone();
+                                let snapshot_event = WsEvent::HistoryUpdated { items: history_items };
+                                if let Ok(bytes) = serde_json::to_vec(&snapshot_event) {
+                                    if let Ok((nonce, ciphertext)) = server_session.encrypt(&bytes) {
+                                        let env = json!({
+                                            "type": "encrypted_envelope",
+                                            "nonce": nonce,
+                                            "ciphertext": ciphertext
+                                        });
+                                        let _ = direct_tx_clone.send(Message::Text(env.to_string().into())).await;
+                                    }
+                                }
+
+                                *crypto_recv.write().await = Some(server_session);
+                            }
                         }
-                        {
-                            let mut active = state_clone.active_clipboard.write().await;
-                            *active = payload.text.clone();
+                        ClientWsMessage::EncryptedEnvelope { nonce, ciphertext } => {
+                            let session_guard = crypto_recv.read().await;
+                            if let Some(ref session) = *session_guard {
+                                if let Ok(plaintext_bytes) = session.decrypt(&nonce, &ciphertext) {
+                                    if let Ok(payload) = serde_json::from_slice::<ClipboardPayload>(&plaintext_bytes) {
+                                        apply_clipboard_update(&state_clone, &payload.text).await;
+                                    }
+                                }
+                            }
                         }
-                        let _ = set_system_clipboard(&payload.text);
-                        let now = Utc::now().timestamp_millis();
-                        let item = HistoryItem::new(
-                            Uuid::new_v4().to_string(),
-                            "clipboard".to_string(),
-                            payload.text.clone(),
-                            None,
-                            "ios_to_win".to_string(),
-                            now,
-                            None,
-                        );
-                        state_clone.add_history_item(item).await;
-                        let _ = state_clone.ws_broadcast.send(WsEvent::ClipboardUpdate {
-                            content: payload.text,
-                            timestamp: now,
-                            source: "ios".to_string(),
-                        });
+                        ClientWsMessage::LegacyClipboard(payload) => {
+                            apply_clipboard_update(&state_clone, &payload.text).await;
+                        }
                     }
                 }
             }
