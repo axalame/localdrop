@@ -7,7 +7,8 @@
 ## Демонстрация работы
 
 Сценарий взаимодействия узлов в локальной сети (Windows ПК 1 ⇄ Смартфон с камерой ⇄ Браузер ПК 2):
-- [Скачать демонстрационное видео экосистемы (Full HD 1080p, 60 FPS, WebM)](https://github.com/axalame/localdrop/releases/download/v0.1.2/LocalDrop-Demo.webm)
+
+https://github.com/user-attachments/assets/48b3bead-7096-472a-839b-16b3a898d478
 
 ## Технологический стек
 

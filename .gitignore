@@ -37,4 +37,6 @@ Thumbs.db
 # Local helper scripts and scratchpads
 *.bat
 scratch/
+*.webm
+*.mp4
 
