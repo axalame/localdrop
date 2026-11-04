@@ -277,9 +277,9 @@ export function useDashboardState() {
       const item = await pasteFromClipboardApi();
       if (item) {
         if (item.item_type === 'file') {
-          setUploadStatus(`Скриншот отправлен на iPhone (${item.content})`);
+          setUploadStatus(`Скриншот отправлен на телефон (${item.content})`);
         } else {
-          setUploadStatus('Текст из буфера отправлен на iPhone');
+          setUploadStatus('Текст из буфера отправлен на телефон');
         }
         await loadData();
       } else {

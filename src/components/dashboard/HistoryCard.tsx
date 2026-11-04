@@ -4,6 +4,7 @@ import type { HistoryItem } from '../../types';
 import { formatSize, formatTime, isImageFile, extractFirstUrl } from '../../utils/formatters';
 import { ClickableText } from '../common/ClickableText';
 import type { PreviewImage } from '../../hooks/useDashboardState';
+import { isTauri } from '../../services/api';
 
 interface HistoryCardProps {
   item: HistoryItem;
@@ -139,7 +140,7 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
                 <Eye className="w-3.5 h-3.5" />
                 <span>Просмотр</span>
               </button>
-              {item.file_path && (
+              {item.file_path && isTauri && (
                 <button
                   onClick={() => onOpenFile(item.file_path)}
                   className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors cursor-pointer"
@@ -148,14 +149,16 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
                   <span>В папке</span>
                 </button>
               )}
-              <a
-                href={`${apiBase}/api/download/${item.id}`}
-                download={item.content}
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Скачать</span>
-              </a>
+              {!isTauri && (
+                <a
+                  href={`${apiBase}/api/download/${item.id}`}
+                  download={item.content}
+                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Скачать</span>
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -174,7 +177,7 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
         <div className="flex items-center justify-end gap-2 pt-0.5">
           {isFile ? (
             <>
-              {item.file_path && (
+              {item.file_path && isTauri && (
                 <button
                   onClick={() => onOpenFile(item.file_path)}
                   className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors cursor-pointer"
@@ -183,14 +186,16 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
                   <span>Показать в папке</span>
                 </button>
               )}
-              <a
-                href={`${apiBase}/api/download/${item.id}`}
-                download={item.content}
-                className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Скачать</span>
-              </a>
+              {!isTauri && (
+                <a
+                  href={`${apiBase}/api/download/${item.id}`}
+                  download={item.content}
+                  className="flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 font-medium px-2 py-1 rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Скачать</span>
+                </a>
+              )}
             </>
           ) : (
             <>

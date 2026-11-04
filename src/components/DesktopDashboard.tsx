@@ -109,7 +109,7 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
         onSwitchToMobile={onSwitchToMobile}
       />
 
-      <main className="flex-1 min-h-0 overflow-hidden p-3.5 sm:p-5 flex flex-col lg:flex-row gap-3.5 xl:gap-5 max-w-[1850px] mx-auto w-full">
+      <main className="flex-1 min-h-0 overflow-hidden p-3 sm:p-4.5 flex flex-row gap-3 xl:gap-4.5 max-w-[1920px] mx-auto w-full h-full">
         {/* Left Column: Sidebar Grouping & Filters (Matches Screenshot) */}
         <SidebarFilter
           activeCategory={activeCategory}
@@ -128,7 +128,7 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
         />
 
         {/* Center Column: QR Code, Clipboard Control & DropZone */}
-        <div className="w-full lg:w-72 xl:w-80 shrink-0 h-full flex flex-col gap-4 overflow-y-auto overflow-x-hidden pr-1.5">
+        <div className="w-64 md:w-72 xl:w-80 shrink-0 h-full flex flex-col gap-3.5 overflow-y-auto overflow-x-hidden pr-1">
           <QrCard
             qrSvg={qrSvg}
             mobileUrl={mobileUrl}

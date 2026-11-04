@@ -29,7 +29,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ connected, onRefresh
         >
           {connected ? (
             <>
-              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)] shrink-0"></span>
               <span>На связи</span>
             </>
           ) : (

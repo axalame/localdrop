@@ -2,6 +2,7 @@ import React from 'react';
 import { Camera, FolderOpen, Download, X } from 'lucide-react';
 import { formatSize } from '../../utils/formatters';
 import type { PreviewImage } from '../../hooks/useDashboardState';
+import { isTauri } from '../../services/api';
 
 interface ImagePreviewModalProps {
   previewImage: PreviewImage;
@@ -37,7 +38,7 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          {previewImage.filePath && (
+          {previewImage.filePath && isTauri && (
             <button
               onClick={() => onOpenFile(previewImage.filePath)}
               className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-medium text-zinc-200 transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -47,15 +48,17 @@ export const ImagePreviewModal: React.FC<ImagePreviewModalProps> = ({
               <span>В папке</span>
             </button>
           )}
-          <a
-            href={previewImage.url}
-            download={previewImage.title}
-            className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-medium text-white transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Скачать файл"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Скачать</span>
-          </a>
+          {!isTauri && (
+            <a
+              href={previewImage.url}
+              download={previewImage.title}
+              className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-medium text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+              title="Скачать файл"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Скачать</span>
+            </a>
+          )}
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors cursor-pointer"

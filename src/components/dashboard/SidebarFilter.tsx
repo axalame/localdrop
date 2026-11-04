@@ -88,7 +88,7 @@ export const SidebarFilter: React.FC<SidebarFilterProps> = ({
   );
 
   return (
-    <aside className="w-full lg:w-48 xl:w-56 bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-3 shrink-0 text-xs shadow-md h-full overflow-hidden">
+    <aside className="w-44 md:w-48 xl:w-54 bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-3 flex flex-col gap-3 shrink-0 text-xs shadow-md h-full overflow-hidden">
       {/* Encryption badge */}
       {isEncrypted && (
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-[11px] font-medium shrink-0">

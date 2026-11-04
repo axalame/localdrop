@@ -36,7 +36,7 @@ export const MobileView: React.FC = () => {
   } = useMobileState();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white pb-12">
+    <div className="min-h-screen w-full bg-zinc-950 text-zinc-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white pb-20 touch-pan-y">
       <MobileHeader connected={connected} onRefresh={loadInitialData} />
 
       <main className="p-4 flex flex-col gap-4 max-w-lg mx-auto w-full">

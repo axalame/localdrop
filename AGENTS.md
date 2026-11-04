@@ -63,6 +63,10 @@ src/
 - **Never commit local scripts or temporary files:** Do NOT commit `.bat`, `.cmd`, `.sh`, `.ps1`, local scratchpads, build dumps, or test artifacts. All local tooling must reside exclusively in `.gitignore`.
 - **Pure Source Code Only:** The repository must contain strictly production source code, configuration files, and standard package descriptors (`package.json`, `Cargo.toml`).
 
+### Explicit User Approval for Git Commits & Pushes (Strict Rule)
+- **NEVER automatically execute `git commit` or `git push`:** All code changes, refactors, and test verifications must remain in the working tree until the user explicitly commands to commit or push (e.g. "закоммить", "отправь на гит", "push").
+- Always wait for the user's explicit instruction before executing any `git commit` or `git push` command.
+
 ### Strict Technical README & Documentation
 - **Zero Emojis Policy:** Do NOT use emojis (no 🚀, 📦, ⚡, etc.) in `README.md` or any documentation files.
 - **Engineering Tone:** Maintain a formal, concise, and rigorous technical specification tone (architecture diagrams, API specs, security considerations, standard CLI commands).

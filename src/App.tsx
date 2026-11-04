@@ -18,19 +18,19 @@ export function App() {
     return <MobileView />;
   }
 
-  // On PC: allow switching to iPhone view for preview/testing and back
+  // On PC: in native Tauri desktop app allow switching to phone view for preview/testing and back
   return (
-    <div className="h-full w-full overflow-hidden">
+    <div className="h-screen w-screen overflow-hidden">
       {viewMode === 'desktop' ? (
-        <DesktopDashboard onSwitchToMobile={() => setViewMode('mobile')} />
+        <DesktopDashboard onSwitchToMobile={isTauri ? () => setViewMode('mobile') : undefined} />
       ) : (
         <div className="h-full w-full bg-zinc-950 flex flex-col items-center overflow-y-auto">
           {/* Top Bar on PC in Mobile Preview Mode */}
           <div className="w-full bg-zinc-900 border-b border-zinc-800 px-6 py-3 flex items-center justify-between z-30 sticky top-0 shadow-sm">
             <div className="flex items-center gap-2.5 text-xs text-zinc-300">
               <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-              <span className="font-semibold text-zinc-100">Предпросмотр iPhone</span>
-              <span className="text-zinc-500 hidden sm:inline">— так приложение выглядит на телефоне в браузере Safari</span>
+              <span className="font-semibold text-zinc-100">Предпросмотр: вид телефон</span>
+              <span className="text-zinc-500 hidden sm:inline">— так приложение выглядит на смартфоне в браузере</span>
             </div>
 
             <button

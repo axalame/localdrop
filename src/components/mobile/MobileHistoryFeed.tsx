@@ -44,7 +44,7 @@ export const MobileHistoryFeed: React.FC<MobileHistoryFeedProps> = ({
             >
               <div className="flex items-center justify-between text-[11px] text-zinc-500">
                 <span className="font-semibold text-zinc-400">
-                  {item.direction === 'ios_to_win' ? 'С iPhone' : 'С Windows'}
+                  {item.direction === 'ios_to_win' ? 'С телефона' : 'С ПК'}
                 </span>
                 <span>
                   {new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

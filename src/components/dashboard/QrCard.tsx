@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Smartphone, Copy, Check } from 'lucide-react';
 
 interface QrCardProps {
@@ -14,8 +14,10 @@ export const QrCard: React.FC<QrCardProps> = ({
   isCopiedLink,
   onCopyLink,
 }) => {
+  const [isBlurred, setIsBlurred] = useState(true);
+
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col gap-3.5 shrink-0">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col gap-3 shrink-0">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
           <Smartphone className="w-4 h-4 text-blue-500 shrink-0" />
@@ -28,18 +30,36 @@ export const QrCard: React.FC<QrCardProps> = ({
         </span>
       </div>
 
-      <div className="flex flex-col items-center gap-3 pt-0.5 text-center">
-        <div className="bg-white p-2.5 rounded-2xl shadow-sm flex items-center justify-center shrink-0 border border-zinc-700/50">
+      <div className="flex flex-col items-center gap-2.5 pt-0.5 text-center">
+        {/* QR container with frosted glass effect and light transparency */}
+        <div
+          onClick={() => setIsBlurred((prev) => !prev)}
+          className="relative group overflow-hidden bg-white p-2.5 rounded-2xl shadow-md border border-zinc-200/80 flex items-center justify-center shrink-0 cursor-pointer select-none transition-all duration-300 hover:shadow-lg"
+          title={isBlurred ? 'Нажмите, чтобы показать QR-код' : 'Нажмите, чтобы скрыть QR-код'}
+        >
           {qrSvg ? (
             <div
-              className="w-32 h-32 [&>svg]:w-full [&>svg]:h-full"
+              className={`w-28 h-28 sm:w-32 sm:h-32 [&>svg]:w-full [&>svg]:h-full transition-all duration-300 ease-out ${
+                isBlurred
+                  ? 'filter blur-[5px] scale-[0.98] opacity-75'
+                  : 'filter blur-0 scale-100 opacity-100'
+              }`}
               dangerouslySetInnerHTML={{ __html: qrSvg }}
             />
           ) : (
-            <div className="w-32 h-32 flex items-center justify-center text-zinc-500 text-xs">
+            <div className="w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center text-zinc-500 text-xs">
               Генерация QR...
             </div>
           )}
+
+          {/* Frosted glass surface overlay with light transparency */}
+          <div
+            className={`absolute inset-0 rounded-2xl pointer-events-none transition-all duration-300 ease-out ${
+              isBlurred
+                ? 'opacity-100 backdrop-blur-[1px] bg-white/10 border border-white/60 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),inset_0_-1px_1px_rgba(0,0,0,0.03)]'
+                : 'opacity-0 backdrop-blur-none bg-transparent border-transparent'
+            }`}
+          />
         </div>
 
         <p className="text-xs text-zinc-400 leading-relaxed px-1">

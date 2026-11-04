@@ -35,10 +35,10 @@ export const MobileShortcutGuide: React.FC<MobileShortcutGuideProps> = ({
       {isOpen && (
         <div className="p-4 pt-1 border-t border-zinc-800 bg-zinc-950/60 text-xs text-zinc-300 flex flex-col gap-3">
           <p className="leading-relaxed">
-            Вы можете настроить отправку буфера обмена прямо с рабочего стола или через <b>двойное постукивание по задней крышке iPhone</b>:
+            Вы можете настроить автоматическую отправку буфера обмена на ПК через <b>быстрые команды</b>:
           </p>
           <ol className="list-decimal pl-4 space-y-1.5 text-zinc-300">
-            <li>Откройте приложение <b>Команды</b> на iPhone.</li>
+            <li>Откройте приложение <b>Команды</b> на телефоне.</li>
             <li>Создайте действие <b>Получить буфер обмена</b>.</li>
             <li>Добавьте действие <b>Получить содержимое URL</b>:
               <div className="mt-1 font-mono text-[11px] bg-zinc-900 p-2 rounded-lg border border-zinc-800 space-y-0.5">

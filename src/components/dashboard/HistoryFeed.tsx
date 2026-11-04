@@ -3,6 +3,7 @@ import { Search, FolderOpen, Trash2, Clipboard } from 'lucide-react';
 import type { HistoryItem } from '../../types';
 import { HistoryCard } from './HistoryCard';
 import type { PreviewImage } from '../../hooks/useDashboardState';
+import { isTauri } from '../../services/api';
 
 interface HistoryFeedProps {
   history: HistoryItem[];
@@ -57,14 +58,16 @@ export const HistoryFeed: React.FC<HistoryFeedProps> = ({
             />
           </div>
 
-          <button
-            onClick={onOpenFolder}
-            title="Открыть папку загрузок"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition-colors shrink-0 cursor-pointer"
-          >
-            <FolderOpen className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-            <span className="hidden sm:inline">Папка</span>
-          </button>
+          {isTauri && (
+            <button
+              onClick={onOpenFolder}
+              title="Открыть папку загрузок"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition-colors shrink-0 cursor-pointer"
+            >
+              <FolderOpen className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="hidden sm:inline">Папка</span>
+            </button>
+          )}
 
           <button
             onClick={onClearHistory}

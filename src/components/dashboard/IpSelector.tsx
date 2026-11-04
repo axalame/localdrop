@@ -25,8 +25,8 @@ export const IpSelector: React.FC<IpSelectorProps> = ({
         className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs text-zinc-200 transition-colors cursor-pointer"
         title="Выбрать сетевой адрес"
       >
-        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <Wifi className="w-3.5 h-3.5 text-zinc-400" />
+        <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.85)] shrink-0"></span>
+        <Wifi className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
         <span className="font-mono font-medium text-zinc-200">
           {currentIp}:{port}
         </span>

@@ -59,7 +59,7 @@ export const MobileIncomingClipboard: React.FC<MobileIncomingClipboardProps> = (
           className="w-full py-2.5 px-4 rounded-xl font-medium text-xs bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-blue-400 flex items-center justify-center gap-1.5 transition-colors"
         >
           <ExternalLink className="w-3.5 h-3.5" />
-          <span>Открыть ссылку в Safari</span>
+          <span>Открыть ссылку</span>
         </a>
       )}
 
@@ -75,12 +75,12 @@ export const MobileIncomingClipboard: React.FC<MobileIncomingClipboardProps> = (
         {copiedSuccess ? (
           <>
             <Check className="w-4 h-4 text-white" />
-            <span>Скопировано в буфер iPhone!</span>
+            <span>Скопировано в буфер телефона!</span>
           </>
         ) : (
           <>
             <Copy className="w-4 h-4" />
-            <span>Скопировать в буфер iPhone</span>
+            <span>Скопировать в буфер телефона</span>
           </>
         )}
       </button>

@@ -44,7 +44,7 @@ export const DevicesModal: React.FC<DevicesModalProps> = ({
               <Smartphone className="w-8 h-8 mb-2 stroke-1 text-zinc-600" />
               <p className="font-medium text-zinc-300">Нет подключенных мобильных устройств</p>
               <p className="text-[11px] text-zinc-500 mt-1">
-                Отсканируйте QR-код на iPhone для подключения
+                Отсканируйте QR-код на смартфоне для подключения
               </p>
             </div>
           ) : (

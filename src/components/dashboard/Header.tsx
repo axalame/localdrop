@@ -49,10 +49,10 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onSwitchToMobile}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-750 border border-zinc-700/70 text-xs font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
-            title="Посмотреть, как интерфейс отображается на iPhone"
+            title="Посмотреть мобильный интерфейс (вид телефон)"
           >
             <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-            <span className="hidden sm:inline">Вид iPhone</span>
+            <span className="hidden sm:inline">Вид телефон</span>
           </button>
         )}
 
