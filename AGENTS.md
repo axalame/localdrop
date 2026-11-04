@@ -54,3 +54,16 @@ src/
 - Match existing formatting, types, and styling (Tailwind CSS v4).
 - Verify type safety (`npm run build` / `tsc -b`) and linter checks (`npm run lint` / `oxlint`) before concluding work.
 - Maintain seamless parity between native Tauri desktop execution and mobile browser view.
+
+---
+
+## 4. Repository Hygiene & Documentation Standards (Strict Global Rule)
+
+### Zero Junk in Repository
+- **Never commit local scripts or temporary files:** Do NOT commit `.bat`, `.cmd`, `.sh`, `.ps1`, local scratchpads, build dumps, or test artifacts. All local tooling must reside exclusively in `.gitignore`.
+- **Pure Source Code Only:** The repository must contain strictly production source code, configuration files, and standard package descriptors (`package.json`, `Cargo.toml`).
+
+### Strict Technical README & Documentation
+- **Zero Emojis Policy:** Do NOT use emojis (no 🚀, 📦, ⚡, etc.) in `README.md` or any documentation files.
+- **Engineering Tone:** Maintain a formal, concise, and rigorous technical specification tone (architecture diagrams, API specs, security considerations, standard CLI commands).
+

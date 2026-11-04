@@ -9,3 +9,8 @@
 - Rapid polling loops must reuse OS resources and check OS sequence numbers (`GetClipboardSequenceNumber`) to avoid decoding bitmaps repeatedly.
 - File downloads and previews must stream chunks (`ServeFile`) with HTTP Range support; never read entire multi-gigabyte files into RAM.
 - Endpoints must enforce path confinement inside the download directory and validate filenames against path traversal and DOS reserved device names.
+
+## Repository Cleanliness & Documentation
+- Never commit batch scripts (`.bat`, `.cmd`), shell scripts (`.sh`, `.ps1`), or temporary scratch files to the repository.
+- Keep `README.md` strictly technical, formal, and 100% free of emojis.
+
