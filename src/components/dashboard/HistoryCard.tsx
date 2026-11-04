@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, FileText, Clipboard, Maximize2, Eye, FolderOpen, Download, ExternalLink, Check, Copy } from 'lucide-react';
+import { Camera, FileText, Clipboard, Maximize2, Eye, FolderOpen, Download, ExternalLink, Check, Copy, Star } from 'lucide-react';
 import type { HistoryItem } from '../../types';
 import { formatSize, formatTime, isImageFile, extractFirstUrl } from '../../utils/formatters';
 import { ClickableText } from '../common/ClickableText';
@@ -13,6 +13,7 @@ interface HistoryCardProps {
   onOpenFile: (filePath?: string) => void;
   onOpenLink: (url: string) => void;
   onCopyText: (id: string, text: string) => void;
+  onToggleFavorite?: (id: string) => void;
 }
 
 export const HistoryCard: React.FC<HistoryCardProps> = ({
@@ -23,12 +24,14 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
   onOpenFile,
   onOpenLink,
   onCopyText,
+  onToggleFavorite,
 }) => {
   const isFile = item.item_type === 'file';
   const isImage = isFile && isImageFile(item.content);
   const fromIphone = item.direction === 'ios_to_win';
   const itemUrl = !isFile ? extractFirstUrl(item.content) : null;
   const viewUrl = `${apiBase}/api/view/${item.id}`;
+  const displayDevice = item.device_name || (fromIphone ? 'С телефона' : 'С ПК');
 
   return (
     <div className="w-full bg-zinc-950 border border-zinc-800 hover:border-zinc-700/80 rounded-xl p-3.5 transition-colors flex flex-col gap-2.5 group box-border shrink-0">
@@ -55,7 +58,7 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
                 : 'bg-zinc-800 text-zinc-300 border border-zinc-700/60'
             }`}
           >
-            {fromIphone ? 'С iPhone' : 'С Windows'}
+            {displayDevice}
           </span>
 
           {isFile && item.size && (
@@ -63,7 +66,22 @@ export const HistoryCard: React.FC<HistoryCardProps> = ({
           )}
         </div>
 
-        <span className="text-zinc-500 font-mono text-[11px]">{formatTime(item.timestamp)}</span>
+        <div className="flex items-center gap-1.5">
+          {onToggleFavorite && (
+            <button
+              onClick={() => onToggleFavorite(item.id)}
+              className={`p-1 rounded-md transition-colors cursor-pointer ${
+                item.is_favorite
+                  ? 'text-amber-400 hover:text-amber-300'
+                  : 'text-zinc-600 hover:text-zinc-400'
+              }`}
+              title={item.is_favorite ? 'Удалить из избранного' : 'Добавить в избранное'}
+            >
+              <Star className={`w-3.5 h-3.5 ${item.is_favorite ? 'fill-amber-400' : ''}`} />
+            </button>
+          )}
+          <span className="text-zinc-500 font-mono text-[11px]">{formatTime(item.timestamp)}</span>
+        </div>
       </div>
 
       {/* Content Section: with Thumbnail for Images */}

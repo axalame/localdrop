@@ -1,14 +1,17 @@
 import React, { useEffect } from 'react';
 import { useDashboardState } from '../hooks/useDashboardState';
+import { useHistoryFilter } from '../hooks/useHistoryFilter';
 import { useWindowPaste } from '../hooks/useWindowPaste';
 import { useTauriNativeDrop } from '../hooks/useTauriNativeDrop';
 import { Header } from './dashboard/Header';
+import { SidebarFilter } from './dashboard/SidebarFilter';
 import { QrCard } from './dashboard/QrCard';
 import { ClipboardCard } from './dashboard/ClipboardCard';
 import { DropZone } from './dashboard/DropZone';
 import { HistoryFeed } from './dashboard/HistoryFeed';
 import { ImagePreviewModal } from './dashboard/ImagePreviewModal';
 import { DevicesModal } from './dashboard/DevicesModal';
+import { isTauri } from '../services/api';
 
 export interface DesktopDashboardProps {
   onSwitchToMobile?: () => void;
@@ -21,10 +24,6 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
     qrSvg,
     manualText,
     setManualText,
-    filter,
-    setFilter,
-    search,
-    setSearch,
     copiedLink,
     copiedItem,
     uploadStatus,
@@ -34,10 +33,12 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
     setShowIpDropdown,
     previewImage,
     setPreviewImage,
+    isEncrypted,
     loadData,
     handleCopyText,
     handleCopyLink,
     handleSendManualText,
+    handleToggleFavorite,
     handleClearHistory,
     handleOpenFolder,
     handleOpenFile,
@@ -49,6 +50,24 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
     handlePasteFromClipboard,
     handleNativeDroppedFiles,
   } = useDashboardState();
+
+  const {
+    activeCategory,
+    selectedType,
+    selectedTag,
+    selectedSource,
+    selectedTime,
+    search,
+    setSearch,
+    counts,
+    availableSources,
+    filteredHistory,
+    handleSelectCategory,
+    handleSelectType,
+    handleSelectTag,
+    handleSelectSource,
+    handleSelectTime,
+  } = useHistoryFilter(history, status.clients);
 
   const { isDragging, setIsDragging } = useTauriNativeDrop({
     onDropPaths: handleNativeDroppedFiles,
@@ -72,7 +91,7 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setPreviewImage, setShowDevicesModal, setShowIpDropdown]);
 
-  const apiBase = `http://${status.ip || '127.0.0.1'}:${status.port || 52025}`;
+  const apiBase = isTauri ? `http://${status.ip || '127.0.0.1'}:${status.port || 52025}` : '';
   const mobileUrl = `http://${status.ip}:${status.port}`;
 
   return (
@@ -90,9 +109,26 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
         onSwitchToMobile={onSwitchToMobile}
       />
 
-      <main className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto w-full">
-        {/* Left Column: QR Code & Clipboard Control */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
+      <main className="flex-1 p-4 sm:p-6 flex flex-col lg:flex-row gap-6 max-w-[1700px] mx-auto w-full min-h-0">
+        {/* Left Column: Sidebar Grouping & Filters (Matches Screenshot) */}
+        <SidebarFilter
+          activeCategory={activeCategory}
+          onSelectCategory={handleSelectCategory}
+          selectedType={selectedType}
+          onSelectType={handleSelectType}
+          selectedTag={selectedTag}
+          onSelectTag={handleSelectTag}
+          selectedSource={selectedSource}
+          onSelectSource={handleSelectSource}
+          selectedTime={selectedTime}
+          onSelectTime={handleSelectTime}
+          counts={counts}
+          availableSources={availableSources}
+          isEncrypted={isEncrypted}
+        />
+
+        {/* Center Column: QR Code, Clipboard Control & DropZone */}
+        <div className="w-full lg:w-80 xl:w-96 flex flex-col gap-5 shrink-0">
           <QrCard
             qrSvg={qrSvg}
             mobileUrl={mobileUrl}
@@ -120,14 +156,12 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
         </div>
 
         {/* Right Column: History Feed */}
-        <div className="lg:col-span-7 flex flex-col min-h-0">
+        <div className="flex-1 min-w-0 flex flex-col h-full">
           <HistoryFeed
-            history={history}
-            filter={filter}
+            history={filteredHistory}
             search={search}
             apiBase={apiBase}
             copiedItem={copiedItem}
-            onFilterChange={setFilter}
             onSearchChange={setSearch}
             onOpenFolder={handleOpenFolder}
             onClearHistory={handleClearHistory}
@@ -135,6 +169,7 @@ export const DesktopDashboard: React.FC<DesktopDashboardProps> = ({ onSwitchToMo
             onOpenFile={handleOpenFile}
             onOpenLink={handleOpenLink}
             onCopyText={handleCopyText}
+            onToggleFavorite={handleToggleFavorite}
           />
         </div>
       </main>

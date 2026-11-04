@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { HistoryItem, ServerStatus, WsEvent } from '../types';
+import { createEncryptedWebSocket, type EncryptedWsClient } from '../services/encryptedWs';
 
 export function useMobileState() {
   const [activeClipboard, setActiveClipboard] = useState<string>('');
@@ -70,24 +71,15 @@ export function useMobileState() {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${host}/ws?client_type=mobile`;
 
-    let ws: WebSocket | null = null;
+    let client: EncryptedWsClient | null = null;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
     const connect = () => {
       if (!isMountedRef.current) return;
       try {
-        ws = new WebSocket(wsUrl);
-
-        ws.onopen = () => {
-          if (isMountedRef.current) {
-            setConnected(true);
-            setWasKicked(false);
-          }
-        };
-
-        ws.onmessage = (event) => {
-          try {
-            const data: WsEvent = JSON.parse(event.data);
+        client = createEncryptedWebSocket(
+          wsUrl,
+          (data: WsEvent) => {
             if (data.type === 'clipboard_update') {
               if (isMountedRef.current) {
                 setActiveClipboard(data.payload.content);
@@ -101,25 +93,22 @@ export function useMobileState() {
                 setConnected(false);
               }
             }
-          } catch (e) {
-            console.error('WS parse error:', e);
-          }
-        };
-
-        ws.onclose = () => {
-          if (isMountedRef.current) {
-            setConnected(false);
-            if (!wasKicked) {
-              reconnectTimer = setTimeout(connect, 3000);
+          },
+          () => {
+            if (isMountedRef.current) {
+              setConnected(false);
+              if (!wasKicked) {
+                reconnectTimer = setTimeout(connect, 3000);
+              }
+            }
+          },
+          () => {
+            if (isMountedRef.current) {
+              setConnected(true);
+              setWasKicked(false);
             }
           }
-        };
-
-        ws.onerror = () => {
-          if (isMountedRef.current) {
-            setConnected(false);
-          }
-        };
+        );
       } catch {
         if (isMountedRef.current) {
           setConnected(false);
@@ -133,7 +122,7 @@ export function useMobileState() {
     connect();
 
     return () => {
-      if (ws) ws.close();
+      if (client) client.close();
       if (reconnectTimer) clearTimeout(reconnectTimer);
     };
   }, [loadInitialData, wasKicked]);

@@ -36,6 +36,9 @@ export async function clearHistoryApi(): Promise<boolean> {
 }
 
 export async function toggleFavoriteApi(id: string): Promise<boolean> {
+  if (isTauri) {
+    return tauriInvoke<boolean>('toggle_favorite', { id });
+  }
   const res = await fetch('/api/history/favorite', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -52,6 +55,18 @@ export async function copyToClipboardApi(text: string): Promise<boolean> {
   }
   await navigator.clipboard.writeText(text);
   return true;
+}
+
+export async function sendClipboardTextApi(text: string): Promise<boolean> {
+  if (isTauri) {
+    return tauriInvoke<boolean>('copy_to_clipboard', { text });
+  }
+  const res = await fetch('/api/clipboard', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  });
+  return res.ok;
 }
 
 export async function disconnectClientApi(id: string): Promise<boolean> {
@@ -124,7 +139,10 @@ export async function uploadFilesApi(files: FileList | File[], port: number): Pr
   for (let i = 0; i < files.length; i++) {
     formData.append('files', files[i]);
   }
-  const res = await fetch(`http://127.0.0.1:${port}/api/upload?source=windows`, {
+  const uploadUrl = isTauri
+    ? `http://127.0.0.1:${port}/api/upload?source=windows`
+    : `/api/upload?source=web`;
+  const res = await fetch(uploadUrl, {
     method: 'POST',
     body: formData,
   });

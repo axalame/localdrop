@@ -5,6 +5,8 @@ import {
   fetchHistory,
   clearHistoryApi,
   copyToClipboardApi,
+  sendClipboardTextApi,
+  toggleFavoriteApi,
   disconnectClientApi,
   disconnectAllClientsApi,
   setServerIpApi,
@@ -17,6 +19,7 @@ import {
   openExternalUrl,
   isTauri,
 } from '../services/api';
+import { createEncryptedWebSocket, type EncryptedWsClient } from '../services/encryptedWs';
 
 export interface PreviewImage {
   url: string;
@@ -46,6 +49,7 @@ export function useDashboardState() {
   const [showDevicesModal, setShowDevicesModal] = useState(false);
   const [showIpDropdown, setShowIpDropdown] = useState(false);
   const [previewImage, setPreviewImage] = useState<PreviewImage | null>(null);
+  const [isEncrypted, setIsEncrypted] = useState(false);
 
   const statusRef = useRef(status);
   const isMountedRef = useRef(true);
@@ -108,20 +112,21 @@ export function useDashboardState() {
 
     init();
 
-    let ws: WebSocket | null = null;
+    let encryptedClient: EncryptedWsClient | null = null;
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
 
     const setupWs = () => {
       if (!isMountedRef.current) return;
       const port = statusRef.current.port || 52025;
-      const wsUrl = `ws://127.0.0.1:${port}/ws?client_type=desktop`;
+      const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = isTauri ? `127.0.0.1:${port}` : (window.location.host || `127.0.0.1:${port}`);
+      const wsUrl = `${protocol}//${host}/ws?client_type=desktop`;
 
       try {
-        ws = new WebSocket(wsUrl);
-
-        ws.onmessage = (event) => {
-          try {
-            const data: WsEvent = JSON.parse(event.data);
+        encryptedClient = createEncryptedWebSocket(
+          wsUrl,
+          (data: WsEvent) => {
+            if (!isMountedRef.current) return;
             if (data.type === 'clipboard_update') {
               setStatus((prev) => ({
                 ...prev,
@@ -142,16 +147,19 @@ export function useDashboardState() {
                 connected_clients: data.payload.clients.length,
               }));
             }
-          } catch (e) {
-            console.error('Failed to parse WS event:', e);
+          },
+          () => {
+            if (isMountedRef.current) {
+              setIsEncrypted(false);
+              reconnectTimeout = setTimeout(setupWs, 2000);
+            }
+          },
+          (enc: boolean) => {
+            if (isMountedRef.current) {
+              setIsEncrypted(enc);
+            }
           }
-        };
-
-        ws.onclose = () => {
-          if (isMountedRef.current) {
-            reconnectTimeout = setTimeout(setupWs, 2000);
-          }
-        };
+        );
       } catch {
         if (isMountedRef.current) {
           reconnectTimeout = setTimeout(setupWs, 2000);
@@ -162,7 +170,7 @@ export function useDashboardState() {
     setupWs();
 
     return () => {
-      if (ws) ws.close();
+      if (encryptedClient) encryptedClient.close();
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
     };
   }, [loadData, status.port]);
@@ -183,10 +191,22 @@ export function useDashboardState() {
 
   const handleSendManualText = async () => {
     if (!manualText.trim()) return;
-    await copyToClipboardApi(manualText.trim());
+    await sendClipboardTextApi(manualText.trim());
     setManualText('');
     await loadData();
   };
+
+  const handleToggleFavorite = useCallback(async (id: string) => {
+    setHistory((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, is_favorite: !item.is_favorite } : item))
+    );
+    try {
+      await toggleFavoriteApi(id);
+    } catch (e) {
+      console.error('Failed to toggle favorite:', e);
+      loadData();
+    }
+  }, [loadData]);
 
   const handleClearHistory = async () => {
     if (confirm('Очистить всю историю обмена?')) {
@@ -313,6 +333,8 @@ export function useDashboardState() {
     previewImage,
     setPreviewImage,
     loadData,
+    isEncrypted,
+    handleToggleFavorite,
     handleCopyText,
     handleCopyLink,
     handleSendManualText,

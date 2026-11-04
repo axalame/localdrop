@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-2">
             <h1 className="text-lg font-bold tracking-tight text-zinc-100">LocalDrop</h1>
             <span className="text-[11px] px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700/60 font-medium">
-              Windows & Смартфон (iPhone / Android)
+              Windows • Смартфоны • ПК-на-ПК
             </span>
           </div>
           <p className="text-xs text-zinc-400">Обмен буфером обмена и файлами в локальной сети</p>

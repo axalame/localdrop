@@ -137,6 +137,14 @@ async fn clear_history(state: State<'_, AppState>) -> Result<bool, String> {
 }
 
 #[tauri::command]
+async fn toggle_favorite(state: State<'_, AppState>, id: String) -> Result<bool, String> {
+    match state.toggle_favorite(&id).await {
+        Some(fav) => Ok(fav),
+        None => Err("Item not found".into()),
+    }
+}
+
+#[tauri::command]
 async fn copy_to_clipboard(state: State<'_, AppState>, text: String) -> Result<bool, String> {
     {
         let mut last_local = state.last_local_clip.write().await;
@@ -439,6 +447,7 @@ pub fn run() {
             set_server_ip,
             paste_from_clipboard,
             add_dropped_files,
+            toggle_favorite,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
