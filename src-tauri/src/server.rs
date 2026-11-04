@@ -34,6 +34,18 @@ fn find_dist_dir() -> Option<PathBuf> {
             return Some(p.clone());
         }
     }
+
+    if let Ok(mut exe) = std::env::current_exe() {
+        exe.pop();
+        for _ in 0..4 {
+            let candidate = exe.join("dist");
+            if candidate.join("index.html").exists() {
+                return Some(candidate);
+            }
+            exe.pop();
+        }
+    }
+
     None
 }
 
