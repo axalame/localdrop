@@ -34,6 +34,7 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Local helper scripts
+# Local helper scripts and scratchpads
 *.bat
+scratch/
 
