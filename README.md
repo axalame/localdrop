@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/48b3bead-7096-472a-839b-16b3a898d478
 
 ## Технологический стек
 
-- **Десктопное ядро:** Tauri v2, Rust 1.78+, WebView2.
+- **Десктопное ядро:** Tauri v2, Rust 1.99+ (Rust Edition 2024), WebView2.
 - **Встроенный HTTP & WebSocket сервер:** Axum 0.8, Tokio, Tower-HTTP.
 - **Криптографический модуль:** X25519 ECDH (`x25519-dalek`), HKDF-SHA256 (`hkdf`, `sha2`), XChaCha20-Poly1305 AEAD (`chacha20poly1305` на бэкенде, `@noble/ciphers` на фронтенде).
 - **Интерфейс десктопа и веб-клиента:** React 19, TypeScript, Tailwind CSS v4, Vite, Lucide Icons.
@@ -97,7 +97,7 @@ https://github.com/user-attachments/assets/48b3bead-7096-472a-839b-16b3a898d478
 ### Системные требования
 
 - **Node.js** версии 20 или выше
-- **Rust & Cargo** версии 1.78 или выше
+- **Rust & Cargo** версии 1.90 или выше (рекомендуется актуальная 1.99.1, поддержка Rust Edition 2024)
 
 ### Установка зависимостей
 
