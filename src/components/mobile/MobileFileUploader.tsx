@@ -19,7 +19,8 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
   onFileUpload,
 }) => {
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
-  const mediaInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenModal = () => {
     if (uploading) return;
@@ -46,12 +47,22 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
         <span className="text-[11px] text-zinc-500">Без сжатия</span>
       </div>
 
-      {/* Input for visual photo & video picker (Gallery) */}
+      {/* Input for photo picker with single clean MIME to trigger native Android Photo Picker with multi-select */}
       <input
         type="file"
         multiple
-        accept="image/*,video/*"
-        ref={mediaInputRef}
+        accept="image/*"
+        ref={photoInputRef}
+        onChange={onFileUpload}
+        className="hidden"
+      />
+
+      {/* Input for video picker */}
+      <input
+        type="file"
+        multiple
+        accept="video/*"
+        ref={videoInputRef}
         onChange={onFileUpload}
         className="hidden"
       />
@@ -103,7 +114,8 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
       <MobileUploadSourceModal
         isOpen={isSourceModalOpen}
         onClose={() => setIsSourceModalOpen(false)}
-        onSelectMedia={() => mediaInputRef.current?.click()}
+        onSelectPhotos={() => photoInputRef.current?.click()}
+        onSelectVideos={() => videoInputRef.current?.click()}
         onSelectAllFiles={() => fileInputRef.current?.click()}
       />
     </div>

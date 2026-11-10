@@ -1,17 +1,19 @@
 import React, { useEffect } from 'react';
-import { Image, FolderOpen, X } from 'lucide-react';
+import { Image, Film, FolderOpen, X, Info } from 'lucide-react';
 
 export interface MobileUploadSourceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectMedia: () => void;
+  onSelectPhotos: () => void;
+  onSelectVideos: () => void;
   onSelectAllFiles: () => void;
 }
 
 export const MobileUploadSourceModal: React.FC<MobileUploadSourceModalProps> = ({
   isOpen,
   onClose,
-  onSelectMedia,
+  onSelectPhotos,
+  onSelectVideos,
   onSelectAllFiles,
 }) => {
   useEffect(() => {
@@ -63,7 +65,7 @@ export const MobileUploadSourceModal: React.FC<MobileUploadSourceModalProps> = (
           <button
             onClick={() => {
               onClose();
-              onSelectMedia();
+              onSelectPhotos();
             }}
             className="w-full p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 active:bg-zinc-800/80 flex items-center gap-3.5 transition-all text-left cursor-pointer"
           >
@@ -72,10 +74,30 @@ export const MobileUploadSourceModal: React.FC<MobileUploadSourceModalProps> = (
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-semibold text-zinc-100">
-                Галерея (Фото и видео)
+                Галерея (Фото)
               </span>
               <span className="text-xs text-zinc-400 truncate">
-                Фотопленка, альбомы и недавние кадры
+                Нативный фотопикер с мультивыбором
+              </span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => {
+              onClose();
+              onSelectVideos();
+            }}
+            className="w-full p-3.5 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 active:bg-zinc-800/80 flex items-center gap-3.5 transition-all text-left cursor-pointer"
+          >
+            <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <Film className="w-5 h-5" />
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold text-zinc-100">
+                Галерея (Видео)
+              </span>
+              <span className="text-xs text-zinc-400 truncate">
+                Видеозаписи и ролики без сжатия
               </span>
             </div>
           </button>
@@ -99,6 +121,18 @@ export const MobileUploadSourceModal: React.FC<MobileUploadSourceModalProps> = (
               </span>
             </div>
           </button>
+        </div>
+
+        <div className="p-3 rounded-xl bg-blue-950/40 border border-blue-800/40 flex items-start gap-2.5 text-xs text-blue-200">
+          <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+          <div className="flex flex-col gap-0.5 leading-relaxed">
+            <span className="font-semibold text-blue-300">
+              Подсказка для Android
+            </span>
+            <span className="text-blue-200/90 text-[11px]">
+              Нажимайте на кружочки в углу фото либо зажмите первое фото пальцем (долгий тап) для выбора нескольких файлов сразу.
+            </span>
+          </div>
         </div>
 
         <button
