@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
 import { MobileUploadSourceModal } from './MobileUploadSourceModal';
+import { isIOSDevice } from '../../utils/device';
 
 export interface MobileFileUploaderProps {
   uploading: boolean;
@@ -21,7 +22,14 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
   const mediaInputRef = useRef<HTMLInputElement>(null);
 
   const handleOpenModal = () => {
-    if (!uploading) {
+    if (uploading) return;
+
+    // On iOS (iPhone/iPad), the native browser file input already shows a system sheet
+    // with "Photo Library", "Take Photo", and "Choose File".
+    // On Android and other platforms, open the custom modal to choose between Gallery and File Manager.
+    if (isIOSDevice()) {
+      fileInputRef.current?.click();
+    } else {
       setIsSourceModalOpen(true);
     }
   };
