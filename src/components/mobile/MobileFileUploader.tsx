@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { UploadCloud } from 'lucide-react';
+import { MobileUploadSourceModal } from './MobileUploadSourceModal';
 
 export interface MobileFileUploaderProps {
   uploading: boolean;
@@ -16,6 +17,15 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
   fileInputRef,
   onFileUpload,
 }) => {
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenModal = () => {
+    if (!uploading) {
+      setIsSourceModalOpen(true);
+    }
+  };
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -28,6 +38,17 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
         <span className="text-[11px] text-zinc-500">Без сжатия</span>
       </div>
 
+      {/* Input for visual photo & video picker (Gallery) */}
+      <input
+        type="file"
+        multiple
+        accept="image/*,video/*"
+        ref={mediaInputRef}
+        onChange={onFileUpload}
+        className="hidden"
+      />
+
+      {/* Input for generic file manager (All files & documents) */}
       <input
         type="file"
         multiple
@@ -37,7 +58,7 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
       />
 
       <button
-        onClick={() => fileInputRef.current?.click()}
+        onClick={handleOpenModal}
         disabled={uploading}
         className="w-full py-4 border-2 border-dashed border-zinc-700/80 hover:border-zinc-600 bg-zinc-950 rounded-xl flex flex-col items-center justify-center gap-1.5 active:scale-[0.99] transition-all cursor-pointer"
       >
@@ -70,6 +91,13 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
           {uploadMessage}
         </div>
       )}
+
+      <MobileUploadSourceModal
+        isOpen={isSourceModalOpen}
+        onClose={() => setIsSourceModalOpen(false)}
+        onSelectMedia={() => mediaInputRef.current?.click()}
+        onSelectAllFiles={() => fileInputRef.current?.click()}
+      />
     </div>
   );
 };

@@ -195,6 +195,7 @@ export function useMobileState() {
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
+    e.target.value = '';
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', '/api/upload', true);
