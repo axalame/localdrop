@@ -1,6 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { UploadCloud } from 'lucide-react';
-import { MobileUploadSourceModal } from './MobileUploadSourceModal';
+import React, { useRef } from 'react';
+import { UploadCloud, Image, Film, FolderOpen } from 'lucide-react';
 import { isIOSDevice } from '../../utils/device';
 
 export interface MobileFileUploaderProps {
@@ -18,22 +17,9 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
   fileInputRef,
   onFileUpload,
 }) => {
-  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-
-  const handleOpenModal = () => {
-    if (uploading) return;
-
-    // On iOS (iPhone/iPad), the native browser file input already shows a system sheet
-    // with "Photo Library", "Take Photo", and "Choose File".
-    // On Android and other platforms, open the custom modal to choose between Gallery and File Manager.
-    if (isIOSDevice()) {
-      fileInputRef.current?.click();
-    } else {
-      setIsSourceModalOpen(true);
-    }
-  };
+  const isIOS = isIOSDevice();
 
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-sm flex flex-col gap-3">
@@ -47,7 +33,7 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
         <span className="text-[11px] text-zinc-500">Без сжатия</span>
       </div>
 
-      {/* Input for photo picker with single clean MIME to trigger native Android Photo Picker with multi-select */}
+      {/* Input for photo picker (triggers native Android Photo Picker with multi-select) */}
       <input
         type="file"
         multiple
@@ -67,7 +53,7 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
         className="hidden"
       />
 
-      {/* Input for generic file manager (All files & documents) */}
+      {/* Input for generic file manager */}
       <input
         type="file"
         multiple
@@ -76,19 +62,69 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
         className="hidden"
       />
 
-      <button
-        onClick={handleOpenModal}
-        disabled={uploading}
-        className="w-full py-4 border-2 border-dashed border-zinc-700/80 hover:border-zinc-600 bg-zinc-950 rounded-xl flex flex-col items-center justify-center gap-1.5 active:scale-[0.99] transition-all cursor-pointer"
-      >
-        <UploadCloud className="w-6 h-6 text-zinc-400" />
-        <span className="text-sm font-medium text-zinc-200">
-          Выбрать из Фотопленки или Файлов
-        </span>
-        <span className="text-[11px] text-zinc-500">
-          Сохранится в папку «LocalDrop» на ПК
-        </span>
-      </button>
+      {isIOS ? (
+        /* On iOS (iPhone/iPad): single dashed button that invokes the native iOS action sheet */
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="w-full py-4 border-2 border-dashed border-zinc-700/80 hover:border-zinc-600 bg-zinc-950 rounded-xl flex flex-col items-center justify-center gap-1.5 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
+        >
+          <UploadCloud className="w-6 h-6 text-zinc-400" />
+          <span className="text-sm font-medium text-zinc-200">
+            Выбрать из Фотопленки или Файлов
+          </span>
+          <span className="text-[11px] text-zinc-500">
+            Сохранится в папку «LocalDrop» на ПК
+          </span>
+        </button>
+      ) : (
+        /* On Android and other platforms: direct 1-tap action buttons */
+        <div className="flex flex-col gap-2">
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => photoInputRef.current?.click()}
+              disabled={uploading}
+              className="py-3 px-2 bg-zinc-950 border border-zinc-800 hover:border-blue-500/50 active:bg-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <div className="w-9 h-9 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+                <Image className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-xs font-semibold text-zinc-200">Фото</span>
+              <span className="text-[10px] text-zinc-500">Галерея</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => videoInputRef.current?.click()}
+              disabled={uploading}
+              className="py-3 px-2 bg-zinc-950 border border-zinc-800 hover:border-amber-500/50 active:bg-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <Film className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-xs font-semibold text-zinc-200">Видео</span>
+              <span className="text-[10px] text-zinc-500">Ролики</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="py-3 px-2 bg-zinc-950 border border-zinc-800 hover:border-emerald-500/50 active:bg-zinc-800 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+            >
+              <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                <FolderOpen className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-xs font-semibold text-zinc-200">Файлы</span>
+              <span className="text-[10px] text-zinc-500">Документы</span>
+            </button>
+          </div>
+          <span className="text-[11px] text-zinc-500 text-center">
+            Сохранится в папку «LocalDrop» на ПК
+          </span>
+        </div>
+      )}
 
       {uploading && (
         <div className="flex flex-col gap-1.5 pt-1">
@@ -110,14 +146,6 @@ export const MobileFileUploader: React.FC<MobileFileUploaderProps> = ({
           {uploadMessage}
         </div>
       )}
-
-      <MobileUploadSourceModal
-        isOpen={isSourceModalOpen}
-        onClose={() => setIsSourceModalOpen(false)}
-        onSelectPhotos={() => photoInputRef.current?.click()}
-        onSelectVideos={() => videoInputRef.current?.click()}
-        onSelectAllFiles={() => fileInputRef.current?.click()}
-      />
     </div>
   );
 };
